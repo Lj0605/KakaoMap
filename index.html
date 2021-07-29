@@ -27,10 +27,14 @@
       var params = data.params;
       console.log("onReceivedActivityMessageViaJavascriptInterface "+event);
     }
+    
+    consol.log()
 
     function postMessageToiOS(postData) {
         window.webkit.messageHandlers.callBackHandler.postMessage(postData);
     }
+    
+    consol.log()
 
     var element_layer = document.getElementById('layer');
     function execDaumPostcode() {
