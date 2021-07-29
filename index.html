@@ -50,6 +50,15 @@
     function execDaumPostcode() {
       new daum.Postcode({
         oncomplete: function(data) {
+          geocoder.addressSearch(data.address, function (results, status) {
+                if (status === daum.maps.services.Status.OK) {
+                    var result = results[0]; 
+                    data.latitude = result.y.toString();
+                    data.longitude = result.x.toString();
+                    callbackMessage(JSON.stringify(data));
+                }
+            });
+          
           var jibunAddress = ""
 
           if (data.jibunAddress == "") {
