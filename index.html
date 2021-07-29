@@ -1,85 +1,93 @@
-<!DOCTYPE html>
+<meta http-equiv="Content-Type" content="text/html; charset=euc-kr">
+<html>
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-<html lang="ko">
-  <head>
-    <title>주소 찾기</title>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width,height=device-height,initial-scale=1.0"/>
-  </head>
-  <body onload="execDaumPostcode()">
-  <div id = "layer" style = "display:block; position:absolute; overflow:hidden; z-index:1; -webkit-overflow-scrolling:touch; ">
-  </div>
-  <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
-  <script>
-    window.addEventListener("message", onReceivedPostMessage, false);
-    
-    
+<head>
+</head>
 
-    function onReceivedPostMessage(event){
-      //..ex deconstruct event into action & params
-      var action = event.data.action;
-      var params = event.data.params;
-      console.log("onReceivedPostMessage "+event);
-    }
+<body>
+  <div id="wrap" style="width:100%;height:100%;overflow:hidden;"></div>
+  <div id="map" style="display: none;border:1px solid;width:100%;height:100%;margin-top:10px;"></div>
 
-    function onReceivedActivityMessageViaJavascriptInterface(json){
-      //..ex deconstruct data into action & params
-      var data = JSON.parse(json);
-      var action = data.action;
-      var params = data.params;
-      console.log("onReceivedActivityMessageViaJavascriptInterface "+event);
-    }
-    
-    function callbackMessage(message) {
-      try {
-        onComplete.postMessage(message);
-      } catch (err) {
-      }
-    }
-    
-    function postMessageToiOS(postData) {
-      try{
-        window.webkit.messageHandlers.callBackHandler.postMessage(JSON.stringify(postData));
-      } catch(err) {
-      }
-    }
-   
+</body>
+<script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 
-    var element_layer = document.getElementById('layer');
-    function execDaumPostcode() {
-      new daum.Postcode({
-        oncomplete: function(data) {
-          var jibunAddress = ""
+<script type="text/javascript">
+  var element_wrap = document.getElementById('wrap');
+  var latitude = 37.1;
+  var longitude = 127.2;
 
-          if (data.jibunAddress == "") {
-            jibunAddress = data.autoJibunAddress
-          } else if (data.autoJibunAddress == "") {
-            jibunAddress = data.jibunAddress
-          }
+  function foldDaumPostcode() {
+    // iframe???  ? element  ?? 보? 게 ? 다.
+    element_wrap.style.display = 'none';
+  }
 
-          var postData = {
-              roadAddress : data.roadAddress,
-              jibunAddress : jibunAddress,
-              zonecode : data.zonecode
-          };
-          callbackMessage(JSON.stringify(postData));
-        },
-        width : '100%',
-        height : '100%'
-      }).embed(element_layer);
-      element_layer.style.display = 'block';
-      initLayerPosition();
-    }
+  // ? 재 scroll ? 치  ?? ? 해? 는??
+  var currentScroll = Math.max(document.body.scrollTop, document.documentElement.scrollTop);
+  new daum.Postcode({
+    oncomplete: function(data) {
 
-    function initLayerPosition(){
-      var width = (window.innerWidth || document.documentElement.clientWidth);
-      var height = (window.innerHeight || document.documentElement.clientHeight);
-      element_layer.style.width = width + 'px';
-      element_layer.style.height = height + 'px';
-      element_layer.style.left = (((window.innerWidth || document.documentElement.clientWidth) - width)/2) + 'px';
-      element_layer.style.top = (((window.innerHeight || document.documentElement.clientHeight) - height)/2) + 'px';
-    }
-  </script>
-  </body>
+      // 검? 결  ???  ??? 릭? 을??? 행??코드  ?? 성? 는 부  ?
+
+      // 커서  ?? 세주소 ? 드  ?? 동? 다
+      // document.getElementById("sample3_detailAddress").focus();
+
+      // iframe???  ? element  ?? 보? 게 ? 다.
+      // (autoClose:false 기능??? 용? 다  ? ? 래 코드  ?? 거? 야 ? 면? 서 ? 라지지 ? 는??)
+      element_wrap.style.display = 'none';
+
+      // ? 편번호 찾기 ? 면??보이  ?? 전? 로 scroll ? 치  ?? 돌린다.
+      // document.body.scrollTop = currentScroll;
+
+      geocoder.addressSearch(data.address, function(results, status) {
+        // ? 상? 으  ?검? 이 ? 료? 으  ?
+        // document.getElementById("sample3_address").value = data.address;
+        if (status === daum.maps.services.Status.OK) {
+          var result = results[0]; //첫번  ?결과??값을 ? 용
+          // ? 당 주소??? ??좌표  ?받아??
+          var coords = new daum.maps.LatLng(result.y, result.x); // result.y = ? 도, result.x = 경도
+          // 지?  ? 보여준??
+          mapContainer.style.display = "block";
+          map.relayout();
+
+          // // 지??중심??변경한??
+          map.setCenter(coords);
+
+          data.latitude = result.y.toString();
+          data.longitude = result.x.toString();
+          callbackMessage(JSON.stringify(data));
+        }
+      });
+    },
+
+    // ? 편번호 찾기 ? 면 ? 기가 조정? 었? 때 ? 행??코드  ?? 성? 는 부  ? iframe???  ? element??? 이값을 조정? 다.
+    onresize: function(size) {
+      //   element_wrap.style.height = size.height + 'px';
+    },
+    maxSuggestItems: 5,
+    alwaysShowEngAddr: false,
+    hideMapBtn: true,
+    hideEngBtn: false,
+    width: '100%',
+    height: '100%',
+    autoClose: false,
+  }).embed(element_wrap);
+
+  // iframe???  ? element  ?보이  ?? 다.
+  element_wrap.style.display = 'block';
+
+  var mapContainer = document.getElementById('map'), // 지?  ? ? 시??div
+    mapOption = {
+      center: new kakao.maps.LatLng(latitude, longitude), // 지? 의 중심좌표
+      level: 3 // 지? 의 ?  ? ? 벨
+    };
+
+  //지?  ? 미리 ? 성
+  var map = new kakao.maps.Map(mapContainer, mapOption);
+
+  //주소-좌표 변??객체  ?? 성
+  var geocoder = new kakao.maps.services.Geocoder();
+
+</script>
+
 </html>
-
