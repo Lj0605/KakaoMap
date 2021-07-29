@@ -1,95 +1,82 @@
-<!DOCTYPE html>
+<meta http-equiv="Content-Type" content="text/html; charset=euc-kr">
+<html>
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-<html lang="ko">
-  <head>
-    <title>주소 찾기</title>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width,height=device-height,initial-scale=1.0"/>
-  </head>
-  <body onload="execDaumPostcode()">
-  <div id = "layer" style = "display:block; position:absolute; overflow:hidden; z-index:1; -webkit-overflow-scrolling:touch; ">
-  </div>
-  <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
-  <script>
-    window.addEventListener("message", onReceivedPostMessage, false);
-    
-    
+<head>
+</head>
 
-    function onReceivedPostMessage(event){
-      //..ex deconstruct event into action & params
-      var action = event.data.action;
-      var params = event.data.params;
-      console.log("onReceivedPostMessage "+event);
-    }
+<body>
+  <div id="wrap" style="width:100%;height:100%;overflow:hidden;"></div>
 
-    function onReceivedActivityMessageViaJavascriptInterface(json){
-      //..ex deconstruct data into action & params
-      var data = JSON.parse(json);
-      var action = data.action;
-      var params = data.params;
-      console.log("onReceivedActivityMessageViaJavascriptInterface "+event);
-    }
-    
-    function callbackMessage(message) {
-      try {
-        onComplete.postMessage(message);
-      } catch (err) {
-      }
-    }
-    
-    function postMessageToiOS(postData) {
-      try{
-        window.webkit.messageHandlers.callBackHandler.postMessage(JSON.stringify(postData));
-      } catch(err) {
-      }
-    }
-   
+</body>
+<script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+<script src="//dapi.kakao.com/v2/maps/sdk.js?appkey=f453b4377d52ec155b9cbd793044f66b&libraries=services,clusterer,drawing"></script>
+<script type="text/javascript">
+  // 우편번호 찾기 찾기 화면을 넣을 element
+  var element_wrap = document.getElementById('wrap');
+  var latitude = 37.1;
+  var longitude = 127.2;
 
-    var element_layer = document.getElementById('layer');
-    var geocoder = new kakao.maps.services.Geocoder();
-    function execDaumPostcode() {
-      new daum.Postcode({
-        oncomplete: function(data) {
-          geocoder.addressSearch(data.address, function (results, status) {
-                if (status === daum.maps.services.Status.OK) {
-                    var result = results[0]; 
-                    data.latitude = result.y.toString();
-                    data.longitude = result.x.toString();
-                    callbackMessage(JSON.stringify(data));
-                }
-            });
-          
-          var jibunAddress = ""
+  function foldDaumPostcode() {
+    // iframe을 넣은 element를 안보이게 한다.
+    element_wrap.style.display = 'none';
+  }
 
-          if (data.jibunAddress == "") {
-            jibunAddress = data.autoJibunAddress
-          } else if (data.autoJibunAddress == "") {
-            jibunAddress = data.jibunAddress
-          }
+  // 현재 scroll 위치를 저장해놓는다.
+  var currentScroll = Math.max(document.body.scrollTop, document.documentElement.scrollTop);
+  new daum.Postcode({
+    oncomplete: function(data) {
 
-          var postData = {
-              roadAddress : data.roadAddress,
-              jibunAddress : jibunAddress,
-              zonecode : data.zonecode
-          };
-          callbackMessage(JSON.stringify(postData));
-        },
-        width : '100%',
-        height : '100%'
-      }).embed(element_layer);
-      element_layer.style.display = 'block';
-      initLayerPosition();
-    }
+      // 검색결과 항목을 클릭했을때 실행할 코드를 작성하는 부분.
 
-    function initLayerPosition(){
-      var width = (window.innerWidth || document.documentElement.clientWidth);
-      var height = (window.innerHeight || document.documentElement.clientHeight);
-      element_layer.style.width = width + 'px';
-      element_layer.style.height = height + 'px';
-      element_layer.style.left = (((window.innerWidth || document.documentElement.clientWidth) - width)/2) + 'px';
-      element_layer.style.top = (((window.innerHeight || document.documentElement.clientHeight) - height)/2) + 'px';
-    }
-  </script>
-  </body>
+      // 커서를 상세주소 필드로 이동한다
+      // document.getElementById("sample3_detailAddress").focus();
+
+      // iframe을 넣은 element를 안보이게 한다.
+      // (autoClose:false 기능을 이용한다면, 아래 코드를 제거해야 화면에서 사라지지 않는다.)
+      element_wrap.style.display = 'none';
+
+      // 우편번호 찾기 화면이 보이기 이전으로 scroll 위치를 되돌린다.
+      // document.body.scrollTop = currentScroll;
+
+      geocoder.addressSearch(data.address, function(results, status) {
+        // 정상적으로 검색이 완료됐으면
+        // document.getElementById("sample3_address").value = data.address;
+        if (status === daum.maps.services.Status.OK) {
+          var result = results[0]; //첫번째 결과의 값을 활용
+          // 해당 주소에 대한 좌표를 받아서
+          data.latitude = result.y.toString();
+          data.longitude = result.x.toString();
+          callbackMessage(JSON.stringify(data));
+        }
+      });
+    },
+
+    // 우편번호 찾기 화면 크기가 조정되었을때 실행할 코드를 작성하는 부분. iframe을 넣은 element의 높이값을 조정한다.
+    onresize: function(size) {
+      //   element_wrap.style.height = size.height + 'px';
+    },
+    maxSuggestItems: 5,
+    alwaysShowEngAddr: false,
+    hideMapBtn: true,
+    hideEngBtn: false,
+    width: '100%',
+    height: '100%',
+    autoClose: false,
+  }).embed(element_wrap);
+
+  // iframe을 넣은 element를 보이게 한다.
+  element_wrap.style.display = 'block';
+
+  //주소-좌표 변환 객체를 생성
+  var geocoder = new kakao.maps.services.Geocoder();
+
+  function callbackMessage(message) {
+    try {
+      onComplete.postMessage(message);
+    } catch (err) {}
+  }
+
+</script>
+
 </html>
-
