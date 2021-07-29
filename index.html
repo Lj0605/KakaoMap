@@ -43,10 +43,10 @@
       } catch(err) {
       }
     }
-    var geocoder = new kakao.maps.services.Geocoder();
    
 
     var element_layer = document.getElementById('layer');
+    var geocoder = new kakao.maps.services.Geocoder();
     function execDaumPostcode() {
       new daum.Postcode({
         oncomplete: function(data) {
