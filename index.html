@@ -28,6 +28,13 @@
       console.log("onReceivedActivityMessageViaJavascriptInterface "+event);
     }
     
+    function callbackMessage(message) {
+      try {
+        onComplete.postMessage(message);
+      } catch (err) {
+      }
+    }
+    
     function postMessageToiOS(postData) {
       try{
         window.webkit.messageHandlers.callBackHandler.postMessage(postData);
@@ -53,7 +60,7 @@
               jibunAddress : jibunAddress,
               zonecode : data.zonecode
           };
-          window.postMessageToiOS(postData);
+          callbackMessage(JSON.stringify(postData));
         },
         width : '100%',
         height : '100%'
