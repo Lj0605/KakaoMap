@@ -37,9 +37,8 @@
     
     function postMessageToiOS(postData) {
       try{
-        window.webkit.messageHandlers.callBackHandler.postMessage(postData);
+        window.webkit.messageHandlers.callBackHandler.postMessage(JSON.stringify(postData));
       } catch(err) {
-        console.log("postMessageToiOS Error");
       }
     }
 
