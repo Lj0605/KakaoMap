@@ -29,9 +29,11 @@
     }
     
     function postMessageToiOS(postData) {
-      console.log("postMessageToiOS 1");
-      window.webkit.messageHandlers.callBackHandler.postMessage(postData);
-      console.log("postMessageToiOS 2");
+      try{
+        window.webkit.messageHandlers.callBackHandler.postMessage(postData);
+      } catch(err) {
+        console.log("postMessageToiOS Error" + err);
+      }
     }
 
     var element_layer = document.getElementById('layer');
