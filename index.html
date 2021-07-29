@@ -9,9 +9,11 @@
   <body onload="execDaumPostcode()">
   <div id = "layer" style = "display:block; position:absolute; overflow:hidden; z-index:1; -webkit-overflow-scrolling:touch; ">
   </div>
-  <script src="https://spi.maps.daum.net/imap/map_js_init/postcode.v2.js"></script>
+  <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
   <script>
     window.addEventListener("message", onReceivedPostMessage, false);
+    
+    
 
     function onReceivedPostMessage(event){
       //..ex deconstruct event into action & params
@@ -41,6 +43,18 @@
       } catch(err) {
       }
     }
+    
+    geocoder.addressSearch(data.address, function(results, status) {
+      if (status === kakao.maps.services.Status.OK) {
+
+        var coords = new kakao.maps.LatLng(result[0].y, result[0].x);
+
+        // 결과값으로 받은 위치를 마커로 표시합니다
+        var marker = new kakao.maps.Marker({
+            map: map,
+            position: coords
+        });
+    });
 
     var element_layer = document.getElementById('layer');
     function execDaumPostcode() {
